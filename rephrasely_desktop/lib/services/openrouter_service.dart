@@ -5,10 +5,47 @@ import '../models/chat_message.dart';
 class OpenRouterService {
   static const String _baseUrl = 'https://openrouter.ai/api/v1';
 
+  // Singleton pattern
+  static final OpenRouterService _instance = OpenRouterService._internal();
+  factory OpenRouterService() => _instance;
+  OpenRouterService._internal();
+
   String? _apiKey;
 
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
+    print('🔑 OpenRouterService: API key set');
+  }
+
+  bool get hasApiKey => _apiKey != null && _apiKey!.isNotEmpty;
+
+  /// Get API credit information
+  Future<Map<String, dynamic>?> getCredits() async {
+    if (_apiKey == null || _apiKey!.isEmpty) {
+      throw Exception('API key not set');
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/auth/key'),
+        headers: {'Authorization': 'Bearer $_apiKey'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('💳 OpenRouterService: Fetched credit info');
+
+        // OpenRouter returns data in 'data' field
+        final creditData = data['data'] as Map<String, dynamic>?;
+        return creditData;
+      } else {
+        print('❌ Error fetching credits: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error fetching credits: $e');
+    }
+
+    return null;
   }
 
   /// Test if the API key is valid by making a simple request

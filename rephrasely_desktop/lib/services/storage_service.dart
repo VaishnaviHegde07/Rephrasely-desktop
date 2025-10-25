@@ -41,4 +41,41 @@ class StorageService {
       return false;
     }
   }
+
+  // Generic data storage methods
+  Future<dynamic> getData(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dataJson = prefs.getString(key);
+
+      if (dataJson != null) {
+        return jsonDecode(dataJson);
+      }
+    } catch (e) {
+      print('Error loading data for key $key: $e');
+    }
+
+    return null;
+  }
+
+  Future<bool> saveData(String key, dynamic data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dataJson = jsonEncode(data);
+      return await prefs.setString(key, dataJson);
+    } catch (e) {
+      print('Error saving data for key $key: $e');
+      return false;
+    }
+  }
+
+  Future<bool> removeData(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.remove(key);
+    } catch (e) {
+      print('Error removing data for key $key: $e');
+      return false;
+    }
+  }
 }

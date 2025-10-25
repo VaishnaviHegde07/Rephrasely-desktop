@@ -91,18 +91,6 @@ class SidebarMenu extends StatelessWidget {
                       () =>
                           appState.navigateToSettingsTab(SettingsTab.appTheme),
                 ),
-                const SizedBox(height: 4),
-                _NavItem(
-                  icon: Icons.face_rounded,
-                  label: 'Chat Persona',
-                  isActive:
-                      appState.currentScreen == AppScreen.settings &&
-                      appState.currentSettingsTab == SettingsTab.chatPersona,
-                  onTap:
-                      () => appState.navigateToSettingsTab(
-                        SettingsTab.chatPersona,
-                      ),
-                ),
 
                 // Hotkeys Section
                 Padding(
@@ -120,6 +108,13 @@ class SidebarMenu extends StatelessWidget {
                   label: 'Hotkeys',
                   isActive: appState.currentScreen == AppScreen.hotkeys,
                   onTap: () => appState.navigateToScreen(AppScreen.hotkeys),
+                ),
+                const SizedBox(height: 4),
+                _NavItem(
+                  icon: Icons.history_rounded,
+                  label: 'History',
+                  isActive: appState.currentScreen == AppScreen.history,
+                  onTap: () => appState.navigateToScreen(AppScreen.history),
                 ),
               ],
             ),

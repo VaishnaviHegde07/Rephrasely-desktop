@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         // Horizontal Stats Board at Top
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: theme.colorScheme.muted.withOpacity(0.3),
             border: Border(bottom: BorderSide(color: theme.colorScheme.border)),
@@ -53,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   theme: theme,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
               // Tokens Used
               Expanded(
@@ -65,7 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   theme: theme,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
               // Total Messages
               Expanded(
@@ -77,14 +77,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   theme: theme,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
-              // Models with Hotkeys
+              // API Usage (with limit if available)
               Expanded(
                 child: _StatCard(
-                  icon: Icons.smart_toy_rounded,
-                  label: 'Models with Hotkeys',
-                  value: dashboard.hotkeys.length.toString(),
+                  icon: Icons.account_balance_wallet_rounded,
+                  label: 'API Usage',
+                  value: _getCreditDisplay(dashboard.creditInfo),
                   color: const Color(0xFF10B981),
                   theme: theme,
                 ),
@@ -107,9 +107,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     return number.toString();
   }
+
+  String _getCreditDisplay(Map<String, dynamic>? creditInfo) {
+    if (creditInfo == null) return 'N/A';
+
+    // OpenRouter API returns usage and optional limit
+    final usage = (creditInfo['usage'] ?? 0.0) as num;
+    final limit = creditInfo['limit']; // Can be null
+
+    // If we have a limit, show "usage / limit"
+    if (limit != null && limit is num && limit > 0) {
+      return '\$${usage.toStringAsFixed(2)} / \$${limit.toStringAsFixed(2)}';
+    }
+
+    // No limit set - just show usage only
+    return '\$${usage.toStringAsFixed(2)}';
+  }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCard extends StatefulWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -125,45 +141,113 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
+  State<_StatCard> createState() => _StatCardState();
+}
+
+class _StatCardState extends State<_StatCard>
+    with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 24, color: color),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: theme.textTheme.h2.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.foreground,
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _controller.forward();
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _controller.reverse();
+      },
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: widget.theme.colorScheme.card,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      _isHovered
+                          ? widget.color.withOpacity(0.3)
+                          : widget.theme.colorScheme.border,
+                  width: _isHovered ? 1.5 : 1,
+                ),
+                boxShadow:
+                    _isHovered
+                        ? [
+                          BoxShadow(
+                            color: widget.color.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                        : [],
+              ),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: widget.color.withOpacity(_isHovered ? 0.15 : 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(widget.icon, size: 20, color: widget.color),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: theme.textTheme.muted.copyWith(fontSize: 12),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.value,
+                          style: widget.theme.textTheme.p.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20,
+                            color: widget.theme.colorScheme.foreground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.label,
+                          style: widget.theme.textTheme.muted.copyWith(
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

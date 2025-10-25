@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-enum AppScreen { dashboard, settings, hotkeys }
+enum AppScreen { dashboard, settings, hotkeys, history }
 
-enum SettingsTab { openRouterApi, appTheme, chatPersona }
+enum SettingsTab { openRouterApi, appTheme }
 
 class AppStateProvider extends ChangeNotifier {
   AppScreen _currentScreen = AppScreen.dashboard;

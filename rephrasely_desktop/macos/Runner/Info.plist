@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Rephrasely needs permission to simulate keyboard events for seamless text replacement.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Rephrasely needs accessibility access to capture global hotkeys and selected text from any application.</string>
 </dict>
 </plist>

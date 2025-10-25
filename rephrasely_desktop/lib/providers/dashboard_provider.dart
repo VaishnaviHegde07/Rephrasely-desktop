@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/openrouter_service.dart';
+import '../services/storage_service.dart';
 import '../models/chat_session.dart';
 import '../models/chat_message.dart';
 import '../models/usage_stats.dart';
@@ -10,6 +11,7 @@ import '../models/hotkey.dart';
 
 class DashboardProvider extends ChangeNotifier {
   final OpenRouterService _openRouterService = OpenRouterService();
+  final StorageService _storageService = StorageService();
 
   UsageStats _stats = UsageStats();
   List<ChatSession> _sessions = [];
@@ -21,6 +23,7 @@ class DashboardProvider extends ChangeNotifier {
   List<AIModel> _allModels = [];
   bool _showAllModels = false;
   List<Hotkey> _hotkeys = [];
+  Map<String, dynamic>? _creditInfo;
 
   UsageStats get stats => _stats;
   List<ChatSession> get sessions => _sessions;
@@ -29,8 +32,11 @@ class DashboardProvider extends ChangeNotifier {
   String? get error => _error;
   AIModel? get selectedModel => _selectedModel;
   List<AIModel> get availableModels => _showAllModels ? _allModels : _topModels;
+  List<AIModel> get allModels => _allModels;
+  List<AIModel> get topModels => _topModels;
   bool get showAllModels => _showAllModels;
   List<Hotkey> get hotkeys => _hotkeys;
+  Map<String, dynamic>? get creditInfo => _creditInfo;
 
   DashboardProvider() {
     _loadData();
@@ -39,10 +45,29 @@ class DashboardProvider extends ChangeNotifier {
   void setApiKey(String apiKey) {
     _openRouterService.setApiKey(apiKey);
     loadAvailableModels();
+    loadCreditInfo();
   }
 
   Future<void> _loadData() async {
+    // Load API key first, then load other data
+    await _loadApiKeyAndModels();
     await Future.wait([_loadStats(), _loadSessions(), _loadHotkeys()]);
+  }
+
+  Future<void> _loadApiKeyAndModels() async {
+    try {
+      final settings = await _storageService.loadSettings();
+      if (settings.openRouterApiKey != null &&
+          settings.openRouterApiKey!.isNotEmpty) {
+        print('DashboardProvider: Found saved API key, loading models...');
+        _openRouterService.setApiKey(settings.openRouterApiKey!);
+        await Future.wait([loadAvailableModels(), loadCreditInfo()]);
+      } else {
+        print('DashboardProvider: No API key found in settings');
+      }
+    } catch (e) {
+      print('DashboardProvider: Error loading API key: $e');
+    }
   }
 
   Future<void> _loadStats() async {
@@ -419,5 +444,18 @@ class DashboardProvider extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  Future<void> loadCreditInfo() async {
+    try {
+      print('DashboardProvider: Loading credit info...');
+      _creditInfo = await _openRouterService.getCredits();
+      if (_creditInfo != null) {
+        print('DashboardProvider: Credit info loaded: $_creditInfo');
+      }
+      notifyListeners();
+    } catch (e) {
+      print('Error loading credit info: $e');
+    }
   }
 }
