@@ -67,10 +67,14 @@ class OpenRouterService {
   Future<String?> sendChatCompletion({
     required List<ChatMessage> messages,
     required String model,
+    String? systemPrompt,
   }) async {
     if (_apiKey == null || _apiKey!.isEmpty) {
       throw Exception('API key not set');
     }
+
+    // Build messages array with optional system prompt
+    final messagesPayload = _buildMessagesWithSystem(messages, systemPrompt);
 
     try {
       final response = await http.post(
@@ -81,10 +85,7 @@ class OpenRouterService {
           'HTTP-Referer': 'rephrasely-desktop',
           'X-Title': 'Rephrasely Desktop',
         },
-        body: jsonEncode({
-          'model': model,
-          'messages': messages.map((m) => m.toJson()).toList(),
-        }),
+        body: jsonEncode({'model': model, 'messages': messagesPayload}),
       );
 
       if (response.statusCode == 200) {
@@ -113,10 +114,14 @@ class OpenRouterService {
   Stream<String> sendChatCompletionStream({
     required List<ChatMessage> messages,
     required String model,
+    String? systemPrompt,
   }) async* {
     if (_apiKey == null || _apiKey!.isEmpty) {
       throw Exception('API key not set');
     }
+
+    // Build messages array with optional system prompt
+    final messagesPayload = _buildMessagesWithSystem(messages, systemPrompt);
 
     try {
       final request = http.Request(
@@ -133,7 +138,7 @@ class OpenRouterService {
 
       request.body = jsonEncode({
         'model': model,
-        'messages': messages.map((m) => m.toJson()).toList(),
+        'messages': messagesPayload,
         'stream': true,
       });
 
@@ -330,5 +335,23 @@ class OpenRouterService {
     }
 
     return selected;
+  }
+
+  /// Build messages array with optional system prompt prepended
+  List<Map<String, dynamic>> _buildMessagesWithSystem(
+    List<ChatMessage> messages,
+    String? systemPrompt,
+  ) {
+    final List<Map<String, dynamic>> messagesPayload = [];
+
+    // Add system message if provided
+    if (systemPrompt != null && systemPrompt.isNotEmpty) {
+      messagesPayload.add({'role': 'system', 'content': systemPrompt});
+    }
+
+    // Add user messages
+    messagesPayload.addAll(messages.map((m) => m.toJson()).toList());
+
+    return messagesPayload;
   }
 }
