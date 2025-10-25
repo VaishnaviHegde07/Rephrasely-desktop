@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_state_provider.dart';
 
 class SidebarMenu extends StatelessWidget {
@@ -119,9 +120,56 @@ class SidebarMenu extends StatelessWidget {
               ],
             ),
           ),
+
+          // Donation Section - Subtle
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: InkWell(
+              onTap: () => _launchDonationUrl(),
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.muted.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: theme.colorScheme.border.withOpacity(0.5),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.favorite_rounded,
+                      size: 14,
+                      color: theme.colorScheme.mutedForeground,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Support',
+                      style: theme.textTheme.muted.copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  void _launchDonationUrl() async {
+    final Uri url = Uri.parse('https://github.com/sponsors/your-username');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
   }
 }
 
