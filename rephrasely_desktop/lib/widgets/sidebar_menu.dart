@@ -183,7 +183,7 @@ class SidebarMenu extends StatelessWidget {
   }
 
   void _launchDonationUrl() async {
-    final Uri url = Uri.parse('https://github.com/sponsors/your-username');
+    final Uri url = Uri.parse('https://buymeacoffee.com/vaishnavihegde');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }

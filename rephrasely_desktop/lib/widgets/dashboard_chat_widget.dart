@@ -301,24 +301,40 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                       ),
                     ),
 
-                    // Toggle: Top vs All Models
-                    ShadButton(
-                      size: ShadButtonSize.sm,
-                      onPressed: () {
-                        dashboard.toggleShowAllModels();
-                      },
-                      decoration: ShadDecoration(
-                        color: theme.colorScheme.muted,
+                    // Model Filter: Top | Fast | All
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.muted.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      icon: Icon(
-                        dashboard.showAllModels
-                            ? Icons.list_rounded
-                            : Icons.star_rounded,
-                        size: 14,
-                      ),
-                      child: Text(
-                        dashboard.showAllModels ? 'All' : 'Top',
-                        style: const TextStyle(fontSize: 11),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildFilterButton(
+                            theme,
+                            'Top',
+                            Icons.star_rounded,
+                            ModelFilter.top,
+                            dashboard.modelFilter,
+                            (filter) => dashboard.setModelFilter(filter),
+                          ),
+                          _buildFilterButton(
+                            theme,
+                            'Fast',
+                            Icons.flash_on_rounded,
+                            ModelFilter.fast,
+                            dashboard.modelFilter,
+                            (filter) => dashboard.setModelFilter(filter),
+                          ),
+                          _buildFilterButton(
+                            theme,
+                            'All',
+                            Icons.list_rounded,
+                            ModelFilter.all,
+                            dashboard.modelFilter,
+                            (filter) => dashboard.setModelFilter(filter),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -359,8 +375,9 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Search bar (only show when "All" models is selected)
-                              if (dashboard.showAllModels) ...[
+                              // Search bar (show when "Fast" or "All" models is selected)
+                              if (dashboard.modelFilter == ModelFilter.fast ||
+                                  dashboard.modelFilter == ModelFilter.all) ...[
                                 Padding(
                                   padding: const EdgeInsets.all(8),
                                   child: ShadInput(
@@ -984,6 +1001,53 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildFilterButton(
+    ShadThemeData theme,
+    String label,
+    IconData icon,
+    ModelFilter filter,
+    ModelFilter currentFilter,
+    Function(ModelFilter) onTap,
+  ) {
+    final isSelected = filter == currentFilter;
+    return InkWell(
+      onTap: () => onTap(filter),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color:
+                  isSelected
+                      ? theme.colorScheme.primaryForeground
+                      : theme.colorScheme.foreground.withOpacity(0.7),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color:
+                    isSelected
+                        ? theme.colorScheme.primaryForeground
+                        : theme.colorScheme.foreground.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

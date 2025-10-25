@@ -9,6 +9,8 @@ import '../models/usage_stats.dart';
 import '../models/ai_model.dart';
 import '../models/hotkey.dart';
 
+enum ModelFilter { top, fast, all }
+
 class DashboardProvider extends ChangeNotifier {
   final OpenRouterService _openRouterService = OpenRouterService();
   final StorageService _storageService = StorageService();
@@ -20,8 +22,9 @@ class DashboardProvider extends ChangeNotifier {
   String? _error;
   AIModel? _selectedModel;
   List<AIModel> _topModels = [];
+  List<AIModel> _fastModels = [];
   List<AIModel> _allModels = [];
-  bool _showAllModels = false;
+  ModelFilter _modelFilter = ModelFilter.top;
   List<Hotkey> _hotkeys = [];
   Map<String, dynamic>? _creditInfo;
 
@@ -31,10 +34,23 @@ class DashboardProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   AIModel? get selectedModel => _selectedModel;
-  List<AIModel> get availableModels => _showAllModels ? _allModels : _topModels;
+  List<AIModel> get availableModels {
+    switch (_modelFilter) {
+      case ModelFilter.top:
+        return _topModels;
+      case ModelFilter.fast:
+        return _fastModels;
+      case ModelFilter.all:
+        return _allModels;
+    }
+  }
+
   List<AIModel> get allModels => _allModels;
   List<AIModel> get topModels => _topModels;
-  bool get showAllModels => _showAllModels;
+  List<AIModel> get fastModels => _fastModels;
+  ModelFilter get modelFilter => _modelFilter;
+  @Deprecated('Use modelFilter instead')
+  bool get showAllModels => _modelFilter == ModelFilter.all;
   List<Hotkey> get hotkeys => _hotkeys;
   Map<String, dynamic>? get creditInfo => _creditInfo;
 
@@ -197,6 +213,25 @@ class DashboardProvider extends ChangeNotifier {
             );
           }).toList();
 
+      // Filter fast models (lightweight, mini, and efficient models)
+      _fastModels =
+          _allModels.where((model) {
+            final id = model.id.toLowerCase();
+            final name = model.name.toLowerCase();
+            return id.contains('mini') ||
+                id.contains('small') ||
+                id.contains('lite') ||
+                id.contains('flash') ||
+                id.contains('haiku') ||
+                id.contains('3.5') ||
+                name.contains('mini') ||
+                name.contains('small') ||
+                name.contains('lite') ||
+                name.contains('flash') ||
+                name.contains('haiku') ||
+                name.contains('3.5');
+          }).toList();
+
       // Set default selected model
       if (_selectedModel == null && _topModels.isNotEmpty) {
         _selectedModel = _topModels.first;
@@ -206,7 +241,7 @@ class DashboardProvider extends ChangeNotifier {
       }
 
       print(
-        'DashboardProvider: Loaded ${_topModels.length} top models and ${_allModels.length} all models',
+        'DashboardProvider: Loaded ${_topModels.length} top, ${_fastModels.length} fast, and ${_allModels.length} all models',
       );
       notifyListeners();
     } catch (e) {
@@ -214,9 +249,17 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
+  @Deprecated('Use setModelFilter instead')
   void toggleShowAllModels() {
-    _showAllModels = !_showAllModels;
+    _modelFilter =
+        _modelFilter == ModelFilter.all ? ModelFilter.top : ModelFilter.all;
     notifyListeners();
+  }
+
+  void setModelFilter(ModelFilter filter) {
+    _modelFilter = filter;
+    notifyListeners();
+    print('DashboardProvider: Set model filter to $filter');
   }
 
   void selectModel(AIModel model) {

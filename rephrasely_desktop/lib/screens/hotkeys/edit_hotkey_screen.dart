@@ -26,7 +26,7 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
   String _keyCombo = '';
   final List<String> _pressedKeys = [];
   String _modelSearchQuery = '';
-  bool _showAllModels = false;
+  ModelFilter _modelFilter = ModelFilter.top;
   HotkeyActionType _actionType = HotkeyActionType.rephrase;
   HotkeyStyle _style = HotkeyStyle.professional;
   AIModel? _selectedModel;
@@ -204,28 +204,34 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            // Toggle: Top vs All Models
-                            ShadButton(
-                              size: ShadButtonSize.sm,
-                              onPressed: () {
-                                setState(() {
-                                  _showAllModels = !_showAllModels;
-                                  _modelSearchQuery = '';
-                                  _modelSearchController.clear();
-                                });
-                              },
-                              decoration: ShadDecoration(
-                                color: theme.colorScheme.muted,
+                            // Model Filter: Top | Fast | All
+                            Container(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.muted.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              icon: Icon(
-                                _showAllModels
-                                    ? Icons.list_rounded
-                                    : Icons.star_rounded,
-                                size: 14,
-                              ),
-                              child: Text(
-                                _showAllModels ? 'All' : 'Top',
-                                style: const TextStyle(fontSize: 11),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildFilterButton(
+                                    theme,
+                                    'Top',
+                                    Icons.star_rounded,
+                                    ModelFilter.top,
+                                  ),
+                                  _buildFilterButton(
+                                    theme,
+                                    'Fast',
+                                    Icons.flash_on_rounded,
+                                    ModelFilter.fast,
+                                  ),
+                                  _buildFilterButton(
+                                    theme,
+                                    'All',
+                                    Icons.list_rounded,
+                                    ModelFilter.all,
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -630,9 +636,17 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
         // Get the provider from context to ensure we have the latest state
         final provider = context.read<DashboardProvider>();
 
-        // Get available models based on toggle
-        final availableModels =
-            _showAllModels ? provider.allModels : provider.topModels;
+        // Get available models based on filter
+        final availableModels = () {
+          switch (_modelFilter) {
+            case ModelFilter.top:
+              return provider.topModels;
+            case ModelFilter.fast:
+              return provider.fastModels;
+            case ModelFilter.all:
+              return provider.allModels;
+          }
+        }();
 
         // Filter models based on search query
         final filteredModels =
@@ -653,8 +667,9 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Search bar (only show when "All" models is selected)
-              if (_showAllModels) ...[
+              // Search bar (show when "Fast" or "All" models is selected)
+              if (_modelFilter == ModelFilter.fast ||
+                  _modelFilter == ModelFilter.all) ...[
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: ShadInput(
@@ -903,6 +918,57 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Widget _buildFilterButton(
+    ShadThemeData theme,
+    String label,
+    IconData icon,
+    ModelFilter filter,
+  ) {
+    final isSelected = filter == _modelFilter;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _modelFilter = filter;
+          _modelSearchQuery = '';
+          _modelSearchController.clear();
+        });
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color:
+                  isSelected
+                      ? theme.colorScheme.primaryForeground
+                      : theme.colorScheme.foreground.withOpacity(0.7),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color:
+                    isSelected
+                        ? theme.colorScheme.primaryForeground
+                        : theme.colorScheme.foreground.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
