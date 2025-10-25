@@ -71,8 +71,26 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppStateProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(
-          create: (_) => HotkeyProvider(storageService, hotkeyService),
+        ChangeNotifierProxyProvider<DashboardProvider, HotkeyProvider>(
+          create: (context) {
+            final provider = HotkeyProvider(storageService, hotkeyService);
+            final dashboardProvider = context.read<DashboardProvider>();
+            // Set up the callback to update dashboard stats
+            provider.onHotkeyCountChanged = (count) {
+              dashboardProvider.updateHotkeyCount(count);
+            };
+            return provider;
+          },
+          update: (context, dashboard, previous) {
+            if (previous != null) {
+              // Update the callback if dashboard provider changes
+              previous.onHotkeyCountChanged = (count) {
+                dashboard.updateHotkeyCount(count);
+              };
+              return previous;
+            }
+            return HotkeyProvider(storageService, hotkeyService);
+          },
         ),
         ChangeNotifierProvider(create: (_) => HistoryProvider(hotkeyService)),
         // Provide services for easy access

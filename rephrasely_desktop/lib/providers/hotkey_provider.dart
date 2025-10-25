@@ -12,6 +12,9 @@ class HotkeyProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  // Callback to update dashboard stats
+  Function(int count)? onHotkeyCountChanged;
+
   HotkeyProvider(this._storageService, this._hotkeyService) {
     _loadHotkeys();
   }
@@ -74,6 +77,9 @@ class HotkeyProvider extends ChangeNotifier {
       await _hotkeyService.registerHotkey(hotkey.id, hotkey.keyCombo);
     }
 
+    // Update dashboard stats
+    onHotkeyCountChanged?.call(_hotkeys.length);
+
     notifyListeners();
   }
 
@@ -108,6 +114,10 @@ class HotkeyProvider extends ChangeNotifier {
       _selectedHotkey = null;
     }
     await _saveHotkeys();
+
+    // Update dashboard stats
+    onHotkeyCountChanged?.call(_hotkeys.length);
+
     notifyListeners();
   }
 

@@ -113,6 +113,9 @@ class DashboardProvider extends ChangeNotifier {
         //   _currentSession = _sessions.first;
         // }
 
+        // Recalculate message count from loaded sessions
+        _recalculateMessageCount();
+
         notifyListeners();
       }
     } catch (e) {
@@ -266,6 +269,9 @@ class DashboardProvider extends ChangeNotifier {
     if (_currentSession?.id == sessionId) {
       _currentSession = _sessions.isNotEmpty ? _sessions.first : null;
     }
+
+    // Recalculate message count after deletion
+    _recalculateMessageCount();
 
     notifyListeners();
     _saveSessions();
@@ -469,6 +475,25 @@ class DashboardProvider extends ChangeNotifier {
     _selectedModel = null;
     notifyListeners();
     print('📭 DashboardProvider: Cleared API data');
+  }
+
+  /// Update hotkey count in stats (called when hotkeys are added/deleted)
+  Future<void> updateHotkeyCount(int count) async {
+    _stats = _stats.copyWith(hotkeysRegistered: count);
+    await _saveStats();
+    notifyListeners();
+    print('🔢 DashboardProvider: Updated hotkey count to $count');
+  }
+
+  /// Recalculate total message count from all sessions
+  void _recalculateMessageCount() {
+    int totalMessages = 0;
+    for (final session in _sessions) {
+      totalMessages += session.messages.length;
+    }
+    _stats = _stats.copyWith(messagesCount: totalMessages);
+    _saveStats();
+    print('🔢 DashboardProvider: Recalculated message count to $totalMessages');
   }
 
   /// Update stats for hotkey usage (called from hotkey coordinator)
