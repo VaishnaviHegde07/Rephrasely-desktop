@@ -23,22 +23,39 @@ class SidebarMenu extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header with Logo
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  'Rephrasely',
-                  style: theme.textTheme.h3.copyWith(
-                    fontWeight: FontWeight.bold,
+                // Logo
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Desktop App',
-                  style: theme.textTheme.muted.copyWith(fontSize: 12),
+                const SizedBox(width: 12),
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Rephrasely',
+                        style: theme.textTheme.h4.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Desktop App',
+                        style: theme.textTheme.muted.copyWith(fontSize: 11),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -82,6 +82,8 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
     final themeProvider = context.watch<ThemeProvider>();
     final currentSession = dashboard.currentSession;
     final personaIcon = _getPersonaIcon(themeProvider.chatPersonaIcon);
+    final hasApiKey =
+        themeProvider.apiKey != null && themeProvider.apiKey!.isNotEmpty;
 
     return Row(
       children: [
@@ -821,10 +823,12 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                         },
                         child: ShadInput(
                           controller: _messageController,
-                          placeholder: const Text(
-                            'Type your message... (Enter to send, Shift+Enter for new line)',
+                          placeholder: Text(
+                            hasApiKey
+                                ? 'Type your message... (Enter to send, Shift+Enter for new line)'
+                                : 'API key required - Go to Settings to add one',
                           ),
-                          enabled: !dashboard.isLoading,
+                          enabled: hasApiKey && !dashboard.isLoading,
                           maxLines: 5,
                           minLines: 1,
                         ),
@@ -832,12 +836,15 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                     ),
                     const SizedBox(width: 12),
                     ShadButton(
-                      onPressed: dashboard.isLoading ? null : _sendMessage,
+                      onPressed:
+                          (hasApiKey && !dashboard.isLoading)
+                              ? _sendMessage
+                              : null,
                       icon: Icon(
                         Icons.send_rounded,
                         size: 18,
                         color:
-                            dashboard.isLoading
+                            (!hasApiKey || dashboard.isLoading)
                                 ? theme.colorScheme.foreground.withOpacity(0.3)
                                 : theme.colorScheme.primaryForeground,
                       ),
@@ -854,6 +861,10 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
   }
 
   Widget _buildEmptyState(ShadThemeData theme, DashboardProvider dashboard) {
+    final themeProvider = context.read<ThemeProvider>();
+    final hasApiKey =
+        themeProvider.apiKey != null && themeProvider.apiKey!.isNotEmpty;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -861,26 +872,37 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color:
+                  hasApiKey
+                      ? theme.colorScheme.primary.withOpacity(0.1)
+                      : theme.colorScheme.destructive.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.chat_bubble_outline_rounded,
+              hasApiKey
+                  ? Icons.chat_bubble_outline_rounded
+                  : Icons.key_off_rounded,
               size: 48,
-              color: theme.colorScheme.primary,
+              color:
+                  hasApiKey
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.destructive,
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            'Start a Conversation',
+            hasApiKey ? 'Start a Conversation' : 'API Key Required',
             style: theme.textTheme.h3.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            dashboard.selectedModel != null
-                ? 'Using ${dashboard.selectedModel!.name}'
-                : 'Select a model to get started',
+            hasApiKey
+                ? (dashboard.selectedModel != null
+                    ? 'Using ${dashboard.selectedModel!.name}'
+                    : 'Select a model to get started')
+                : 'Please add your OpenRouter API key in Settings to use the chat',
             style: theme.textTheme.muted,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

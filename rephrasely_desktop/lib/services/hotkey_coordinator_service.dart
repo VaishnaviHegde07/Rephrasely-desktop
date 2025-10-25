@@ -1,5 +1,6 @@
 import '../providers/hotkey_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../services/hotkey_service.dart';
 import '../services/text_processing_service.dart';
 import '../services/notification_service.dart';
@@ -10,6 +11,7 @@ class HotkeyCoordinatorService {
   final TextProcessingService textProcessingService;
   final HotkeyProvider hotkeyProvider;
   final HistoryProvider historyProvider;
+  final DashboardProvider dashboardProvider;
 
   bool _isProcessing = false;
 
@@ -18,6 +20,7 @@ class HotkeyCoordinatorService {
     required this.textProcessingService,
     required this.hotkeyProvider,
     required this.historyProvider,
+    required this.dashboardProvider,
   }) {
     _setupHotkeyListeners();
   }
@@ -83,6 +86,12 @@ class HotkeyCoordinatorService {
 
       print(
         '✅ HotkeyCoordinator: Received transformed text (${transformedText.length} chars)',
+      );
+
+      // Update token usage stats in dashboard
+      await dashboardProvider.updateStatsForHotkeyUsage(
+        originalText: text,
+        transformedText: transformedText,
       );
 
       // Save to history if enabled

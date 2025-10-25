@@ -108,10 +108,10 @@ class DashboardProvider extends ChangeNotifier {
         // Sort by last updated
         _sessions.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
 
-        // Load the most recent session as current
-        if (_sessions.isNotEmpty) {
-          _currentSession = _sessions.first;
-        }
+        // DON'T load the most recent session - always start with empty chat
+        // if (_sessions.isNotEmpty) {
+        //   _currentSession = _sessions.first;
+        // }
 
         notifyListeners();
       }
@@ -456,6 +456,40 @@ class DashboardProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Error loading credit info: $e');
+      _creditInfo = null;
+      notifyListeners();
     }
+  }
+
+  /// Clear credit info and models when API key is removed
+  void clearApiData() {
+    _creditInfo = null;
+    _topModels = [];
+    _allModels = [];
+    _selectedModel = null;
+    notifyListeners();
+    print('📭 DashboardProvider: Cleared API data');
+  }
+
+  /// Update stats for hotkey usage (called from hotkey coordinator)
+  Future<void> updateStatsForHotkeyUsage({
+    required String originalText,
+    required String transformedText,
+  }) async {
+    final inputTokens = _estimateTokens(originalText);
+    final outputTokens = _estimateTokens(transformedText);
+    final totalTokens = inputTokens + outputTokens;
+
+    _stats = _stats.copyWith(
+      tokensUsed: _stats.tokensUsed + totalTokens,
+      lastUpdated: DateTime.now(),
+    );
+
+    await _saveStats();
+    notifyListeners();
+
+    print(
+      '📊 DashboardProvider: Updated stats for hotkey usage (+$totalTokens tokens)',
+    );
   }
 }

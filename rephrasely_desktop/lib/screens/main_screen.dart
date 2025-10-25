@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/hotkey_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../services/hotkey_service.dart';
 import '../services/text_processing_service.dart';
 import '../services/hotkey_coordinator_service.dart';
@@ -37,12 +38,14 @@ class _MainScreenState extends State<MainScreen> {
     if (_coordinator == null) {
       final hotkeyProvider = context.read<HotkeyProvider>();
       final historyProvider = context.read<HistoryProvider>();
+      final dashboardProvider = context.read<DashboardProvider>();
 
       _coordinator = HotkeyCoordinatorService(
         hotkeyService: widget.hotkeyService,
         textProcessingService: widget.textProcessingService,
         hotkeyProvider: hotkeyProvider,
         historyProvider: historyProvider,
+        dashboardProvider: dashboardProvider,
       );
 
       print('🚀 MainScreen: Hotkey coordinator initialized');

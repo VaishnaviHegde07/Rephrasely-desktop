@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/chat_provider.dart';
+import '../../providers/dashboard_provider.dart';
 import '../../services/openrouter_service.dart';
 import '../../widgets/chat_test_widget.dart';
 
@@ -71,6 +72,60 @@ class _OpenRouterApiScreenState extends State<OpenRouterApiScreen> {
         _testResult = 'Error testing API key: $e';
         _isTestingKey = false;
       });
+    }
+  }
+
+  Future<void> _deleteApiKey() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete API Key'),
+            content: const Text(
+              'Are you sure you want to delete your API key? You will need to re-enter it to use AI features.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      await context.read<ThemeProvider>().clearApiKey();
+
+      // Clear API key from OpenRouterService singleton
+      _openRouterService.setApiKey('');
+
+      // Clear dashboard API data (credits, models)
+      if (mounted) {
+        context.read<DashboardProvider>().clearApiData();
+      }
+
+      setState(() {
+        _apiKeyController.clear();
+        _testResult = 'API key deleted successfully';
+        _showChatTest = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'API key deleted. AI features will not work until you add a new key.',
+            ),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -154,6 +209,18 @@ class _OpenRouterApiScreenState extends State<OpenRouterApiScreen> {
                               color: theme.colorScheme.secondary,
                             ),
                             child: const Text('Test with Chatbot'),
+                          ),
+                          const SizedBox(width: 12),
+                          ShadButton(
+                            onPressed:
+                                _apiKeyController.text.isEmpty
+                                    ? null
+                                    : _deleteApiKey,
+                            decoration: ShadDecoration(
+                              color: theme.colorScheme.destructive,
+                            ),
+                            icon: const Icon(Icons.delete_outline, size: 16),
+                            child: const Text('Delete API Key'),
                           ),
                         ],
                       ),
