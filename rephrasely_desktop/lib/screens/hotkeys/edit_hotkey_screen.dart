@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../models/hotkey.dart';
 import '../../models/ai_model.dart';
+import '../../models/app_settings.dart';
 import '../../providers/hotkey_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class EditHotkeyScreen extends StatefulWidget {
   final Hotkey? hotkey;
@@ -613,6 +615,9 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
     ShadThemeData theme,
     DashboardProvider dashboardProvider,
   ) {
+    final themeProvider = context.read<ThemeProvider>();
+    final personaIcon = _getPersonaIcon(themeProvider.chatPersonaIcon);
+
     return ShadPopover(
       controller: _modelPopoverController,
       child: ConstrainedBox(
@@ -621,7 +626,7 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
           size: ShadButtonSize.sm,
           onPressed: _modelPopoverController.toggle,
           decoration: ShadDecoration(color: theme.colorScheme.secondary),
-          icon: const Icon(Icons.smart_toy_rounded, size: 16),
+          icon: Icon(personaIcon, size: 16),
           child: Flexible(
             child: Text(
               _selectedModel?.name ?? 'Select Model',
@@ -970,5 +975,30 @@ class _EditHotkeyScreenState extends State<EditHotkeyScreen> {
         ),
       ),
     );
+  }
+
+  IconData _getPersonaIcon(ChatPersonaIcon icon) {
+    switch (icon) {
+      case ChatPersonaIcon.robot:
+        return Icons.smart_toy_rounded;
+      case ChatPersonaIcon.brain:
+        return Icons.psychology_rounded;
+      case ChatPersonaIcon.sparkles:
+        return Icons.auto_awesome_rounded;
+      case ChatPersonaIcon.star:
+        return Icons.star_rounded;
+      case ChatPersonaIcon.rocket:
+        return Icons.rocket_launch_rounded;
+      case ChatPersonaIcon.lightbulb:
+        return Icons.lightbulb_rounded;
+      case ChatPersonaIcon.graduation:
+        return Icons.school_rounded;
+      case ChatPersonaIcon.heart:
+        return Icons.favorite_rounded;
+      case ChatPersonaIcon.fire:
+        return Icons.local_fire_department_rounded;
+      case ChatPersonaIcon.diamond:
+        return Icons.diamond_rounded;
+    }
   }
 }

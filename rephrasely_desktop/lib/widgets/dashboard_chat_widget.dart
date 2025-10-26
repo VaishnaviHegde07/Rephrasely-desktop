@@ -348,7 +348,7 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                         decoration: ShadDecoration(
                           color: theme.colorScheme.secondary,
                         ),
-                        icon: const Icon(Icons.smart_toy_rounded, size: 16),
+                        icon: Icon(personaIcon, size: 16),
                         child: Text(
                           dashboard.selectedModel?.name ?? 'Select Model',
                           style: const TextStyle(fontSize: 12),

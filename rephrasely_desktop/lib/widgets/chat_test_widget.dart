@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import '../providers/chat_provider.dart';
+import '../providers/theme_provider.dart';
+import '../models/app_settings.dart';
 
 class ChatTestWidget extends StatefulWidget {
   const ChatTestWidget({super.key});
@@ -49,7 +51,9 @@ class _ChatTestWidgetState extends State<ChatTestWidget> {
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
     final chatProvider = context.watch<ChatProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final availableModels = chatProvider.availableModels;
+    final personaIcon = _getPersonaIcon(themeProvider.chatPersonaIcon);
 
     // Debug: Print model count
     print('ChatTestWidget: Displaying ${availableModels.length} models');
@@ -110,7 +114,7 @@ class _ChatTestWidgetState extends State<ChatTestWidget> {
                     decoration: ShadDecoration(
                       color: theme.colorScheme.secondary,
                     ),
-                    icon: const Icon(Icons.smart_toy_rounded, size: 16),
+                    icon: Icon(personaIcon, size: 16),
                     child: Text(
                       chatProvider.selectedModel?.name ?? 'Select Model',
                       style: const TextStyle(fontSize: 12),
@@ -505,5 +509,30 @@ class _ChatTestWidgetState extends State<ChatTestWidget> {
         ],
       ),
     );
+  }
+
+  IconData _getPersonaIcon(ChatPersonaIcon icon) {
+    switch (icon) {
+      case ChatPersonaIcon.robot:
+        return Icons.smart_toy_rounded;
+      case ChatPersonaIcon.brain:
+        return Icons.psychology_rounded;
+      case ChatPersonaIcon.sparkles:
+        return Icons.auto_awesome_rounded;
+      case ChatPersonaIcon.star:
+        return Icons.star_rounded;
+      case ChatPersonaIcon.rocket:
+        return Icons.rocket_launch_rounded;
+      case ChatPersonaIcon.lightbulb:
+        return Icons.lightbulb_rounded;
+      case ChatPersonaIcon.graduation:
+        return Icons.school_rounded;
+      case ChatPersonaIcon.heart:
+        return Icons.favorite_rounded;
+      case ChatPersonaIcon.fire:
+        return Icons.local_fire_department_rounded;
+      case ChatPersonaIcon.diamond:
+        return Icons.diamond_rounded;
+    }
   }
 }
