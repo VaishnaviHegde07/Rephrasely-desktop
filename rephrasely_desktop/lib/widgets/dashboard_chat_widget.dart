@@ -8,6 +8,10 @@ import '../providers/theme_provider.dart';
 import '../models/chat_session.dart';
 import '../models/app_settings.dart';
 
+class _SendMessageIntent extends Intent {
+  const _SendMessageIntent();
+}
+
 class DashboardChatWidget extends StatefulWidget {
   const DashboardChatWidget({super.key});
 
@@ -826,28 +830,39 @@ class _DashboardChatWidgetState extends State<DashboardChatWidget> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: KeyboardListener(
-                        focusNode: FocusNode(),
-                        onKeyEvent: (KeyEvent event) {
-                          if (event is KeyDownEvent) {
-                            // Check if Enter is pressed without Shift
-                            if (event.logicalKey.keyLabel == 'Enter' &&
-                                !HardwareKeyboard.instance.isShiftPressed &&
-                                !dashboard.isLoading) {
-                              _sendMessage();
-                            }
-                          }
+                      child: Shortcuts(
+                        shortcuts: {
+                          const SingleActivator(LogicalKeyboardKey.enter):
+                              const _SendMessageIntent(),
                         },
-                        child: ShadInput(
-                          controller: _messageController,
-                          placeholder: Text(
-                            hasApiKey
-                                ? 'Type your message... (Enter to send, Shift+Enter for new line)'
-                                : 'API key required - Go to Settings to add one',
+                        child: Actions(
+                          actions: {
+                            _SendMessageIntent:
+                                CallbackAction<_SendMessageIntent>(
+                                  onInvoke: (_) {
+                                    if (!HardwareKeyboard
+                                            .instance
+                                            .isShiftPressed &&
+                                        !dashboard.isLoading) {
+                                      _sendMessage();
+                                    }
+                                    return null;
+                                  },
+                                ),
+                          },
+                          child: Focus(
+                            child: ShadInput(
+                              controller: _messageController,
+                              placeholder: Text(
+                                hasApiKey
+                                    ? 'Type your message... (Enter to send, Shift+Enter for new line)'
+                                    : 'API key required - Go to Settings to add one',
+                              ),
+                              enabled: hasApiKey && !dashboard.isLoading,
+                              maxLines: 5,
+                              minLines: 1,
+                            ),
                           ),
-                          enabled: hasApiKey && !dashboard.isLoading,
-                          maxLines: 5,
-                          minLines: 1,
                         ),
                       ),
                     ),
