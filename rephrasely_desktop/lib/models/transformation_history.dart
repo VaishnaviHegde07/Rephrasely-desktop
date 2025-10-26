@@ -52,17 +52,17 @@ class TransformationHistory {
 
   /// Get formatted timestamp (e.g., "2:30 PM")
   String get formattedTime {
-    return DateFormat('h:mm a').format(timestamp);
+    return DateFormat.jm().format(timestamp.toLocal());
   }
 
   /// Get time only (e.g., "2:30 PM")
   String get timeOnly {
-    return DateFormat('h:mm a').format(timestamp);
+    return DateFormat.jm().format(timestamp.toLocal());
   }
 
   /// Get formatted date (e.g., "Jan 15, 2024")
   String get formattedDate {
-    return DateFormat('MMM d, y').format(timestamp);
+    return DateFormat('MMM d, y').format(timestamp.toLocal());
   }
 
   /// Get relative time (e.g., "5 minutes ago")
@@ -86,9 +86,10 @@ class TransformationHistory {
   /// Get date key for grouping (e.g., "Today", "Yesterday", "Jan 15, 2024")
   String get dateGroupKey {
     final now = DateTime.now();
+    final itemLocal = timestamp.toLocal();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    final itemDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+    final itemDate = DateTime(itemLocal.year, itemLocal.month, itemLocal.day);
 
     if (itemDate == today) {
       return 'Today';

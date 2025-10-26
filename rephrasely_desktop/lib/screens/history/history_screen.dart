@@ -309,12 +309,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
           children: [
             // Time
             SizedBox(
-              width: 60,
+              width: 70,
               child: Text(
                 entry.timeOnly,
                 style: theme.textTheme.small.copyWith(
                   color: theme.colorScheme.mutedForeground,
+                  fontFeatures: [const FontFeature.tabularFigures()],
                 ),
+                textAlign: TextAlign.right,
               ),
             ),
             const SizedBox(width: 16),
