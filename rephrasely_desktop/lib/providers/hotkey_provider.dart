@@ -183,45 +183,9 @@ class HotkeyProvider extends ChangeNotifier {
     }
   }
 
-  // Get default hotkeys for first-time users
+  // Get default hotkeys for first-time users (returns empty list)
   List<Hotkey> _getDefaultHotkeys() {
-    return [
-      Hotkey(
-        id: '1',
-        name: 'Rephrase Professionally',
-        keyCombo: 'cmd+shift+R',
-        modelId: 'openai/gpt-4-turbo',
-        modelName: 'OpenAI: GPT-4 Turbo',
-        actionType: HotkeyActionType.rephrase,
-        style: HotkeyStyle.professional,
-        isActive: true,
-        showNotification: true,
-        saveToHistory: true,
-      ),
-      Hotkey(
-        id: '2',
-        name: 'Fix Grammar',
-        keyCombo: 'cmd+shift+G',
-        modelId: 'openai/gpt-4-turbo',
-        modelName: 'OpenAI: GPT-4 Turbo',
-        actionType: HotkeyActionType.fixGrammar,
-        isActive: true,
-        showNotification: true,
-        saveToHistory: true,
-      ),
-      Hotkey(
-        id: '3',
-        name: 'Summarize',
-        keyCombo: 'cmd+shift+S',
-        modelId: 'openai/gpt-4-turbo',
-        modelName: 'OpenAI: GPT-4 Turbo',
-        actionType: HotkeyActionType.summarize,
-        style: HotkeyStyle.concise,
-        isActive: true,
-        showNotification: true,
-        saveToHistory: true,
-      ),
-    ];
+    return [];
   }
 
   // Reload hotkeys
