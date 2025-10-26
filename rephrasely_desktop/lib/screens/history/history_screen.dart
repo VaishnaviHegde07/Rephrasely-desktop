@@ -436,119 +436,151 @@ class _HistoryScreenState extends State<HistoryScreen> {
           (context) => Dialog(
             child: Container(
               width: 600,
-              padding: const EdgeInsets.all(24),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(entry.actionType, style: theme.textTheme.h3),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${entry.formattedDate} at ${entry.timeOnly}',
-                              style: theme.textTheme.muted,
+                  // Header - Fixed
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: theme.colorScheme.border),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(entry.actionType, style: theme.textTheme.h3),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${entry.formattedDate} at ${entry.timeOnly}',
+                                style: theme.textTheme.muted,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                          padding: const EdgeInsets.all(8),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Scrollable Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Original Text
+                          Text(
+                            'Original',
+                            style: theme.textTheme.small.copyWith(
+                              color: theme.colorScheme.mutedForeground,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 20),
-                        onPressed: () => Navigator.pop(context),
-                        padding: const EdgeInsets.all(8),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.muted.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: theme.colorScheme.border,
+                              ),
+                            ),
+                            child: SelectableText(
+                              entry.originalText,
+                              style: theme.textTheme.p,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                  // Original Text
-                  Text(
-                    'Original',
-                    style: theme.textTheme.small.copyWith(
-                      color: theme.colorScheme.mutedForeground,
-                      fontWeight: FontWeight.w600,
+                          // Transformed Text
+                          Text(
+                            'Transformed',
+                            style: theme.textTheme.small.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(
+                                0.05,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.3,
+                                ),
+                              ),
+                            ),
+                            child: SelectableText(
+                              entry.transformedText,
+                              style: theme.textTheme.p,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Model Info
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.smart_toy_outlined,
+                                size: 14,
+                                color: theme.colorScheme.mutedForeground,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                entry.modelName,
+                                style: theme.textTheme.small.copyWith(
+                                  color: theme.colorScheme.mutedForeground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+
+                  // Actions - Fixed at bottom
                   Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.muted.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: theme.colorScheme.border),
-                    ),
-                    child: SelectableText(
-                      entry.originalText,
-                      style: theme.textTheme.p,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Transformed Text
-                  Text(
-                    'Transformed',
-                    style: theme.textTheme.small.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withOpacity(0.3),
+                      border: Border(
+                        top: BorderSide(color: theme.colorScheme.border),
                       ),
                     ),
-                    child: SelectableText(
-                      entry.transformedText,
-                      style: theme.textTheme.p,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Model Info
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.smart_toy_outlined,
-                        size: 14,
-                        color: theme.colorScheme.mutedForeground,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        entry.modelName,
-                        style: theme.textTheme.small.copyWith(
-                          color: theme.colorScheme.mutedForeground,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ShadButton(
+                          onPressed: () {
+                            _copyToClipboard(entry.transformedText);
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.content_copy, size: 16),
+                          child: const Text('Copy Transformed Text'),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Actions
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ShadButton(
-                        onPressed: () {
-                          _copyToClipboard(entry.transformedText);
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.content_copy, size: 16),
-                        child: const Text('Copy Transformed Text'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
